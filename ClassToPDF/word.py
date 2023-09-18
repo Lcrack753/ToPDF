@@ -1,4 +1,6 @@
 import win32com.client
+import re
+import os
 
 class FileWord():
 
@@ -28,13 +30,23 @@ class FileWord():
         except Exception as e:
             print(f"Se produjo un error: {str(e)}")
 
+
 def es_docx(file):
     return file.split('.')[-1] == 'docx'
 
 def lista_docx(dir):
     lista_docx = []
-    for file in dir:
+    for file in os.listdir(dir):
      if es_docx(file):
          lista_docx.append(file)
     return lista_docx
-    
+
+def es_xlsx(file):
+    return file.split('.')[-1] == 'xlsx'
+
+def lista_xlsx(dir):
+    lista_xlsx = []
+    for file in os.listdir(dir):
+        if es_xlsx(file):
+            lista_xlsx.append(file)
+    return lista_xlsx
