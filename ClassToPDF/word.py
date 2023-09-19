@@ -9,9 +9,9 @@ class FileToPDF():
             self.destino = os.path.normpath(destino)
         except Exception as e:
             print('Ingrese una ruta valida')
-        self.lista_docx = lista_docx(self.origen)
-        self.lista_xlsx = lista_xlsx(self.origen)
-        self.lista_pdf = lista_pdf(self.origen)
+        self.lista_docx = lista_files(self.origen, tipo='docx')
+        self.lista_xlsx = lista_files(self.origen, tipo='xlsx')
+        self.lista_pdf = lista_files(self.origen, tipo='pdf')
 
     def word_to_pdf(self):
         if len(self.lista_docx) == 0:
@@ -76,7 +76,9 @@ class FileToPDF():
         except Exception as e:
             print(f"Se produjo un error: {str(e)}")
 
-    def compile(self, lista_pdf, origen):
+    #Combina Los PDF
+    def compile(self, origen):
+        lista_pdf = lista_files(origen, tipo='pdf')
         if len(lista_pdf) == 0:
             print (f'No hay archivos .pdf en {origen}')
             return
@@ -92,35 +94,26 @@ class FileToPDF():
         print(f'Se unieron los siguientes pdf en {os.path.join(self.destino, "resultado.pdf")}:')
         for pdf in lista_pdf: print(pdf)
 
+    def embebido(self):
+        pass
 
+#Comprueba si el archivo es un tipo de archivo especifico
+def es_file(file,tipo):
+    return file.split('.')[-1] == tipo
 
-def es_docx(file):
-    return file.split('.')[-1] == 'docx'
-
-def lista_docx(dir):
-    lista_docx = []
+#Genera una lista con los archivos de un directorio de un tipo especifico
+def lista_files(dir, tipo):
+    lista_files = []
     for file in os.listdir(dir):
-     if es_docx(file):
-         lista_docx.append(file)
-    return lista_docx
-
-def es_xlsx(file):
-    return file.split('.')[-1] == 'xlsx'
-
-def lista_xlsx(dir):
-    lista_xlsx = []
-    for file in os.listdir(dir):
-        if es_xlsx(file) and not file.startswith("~$"): # Saltea archivo temporal
-            lista_xlsx.append(file)
-    return lista_xlsx
-
-def es_pdf(file):
-    return file.split('.')[-1] == 'pdf'
-
-def lista_pdf(dir):
+     if es_file(file, tipo):
+         lista_files.append(file)
+    return lista_files
     lista_pdf = []
     for file in os.listdir(dir):
         if es_pdf(file):
             lista_pdf.append(file)
     return lista_pdf
+
+
+
 
