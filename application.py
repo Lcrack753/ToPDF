@@ -1,6 +1,6 @@
 from ClassToPDF.word import *
 
-dir_actual = input("Escriba el directorio: ")
+dir_actual = os.path.normpath(input("Escriba el directorio: "))
 
 if not os.path.exists(dir_actual + '/pdfs'):
     os.mkdir(dir_actual + '/pdfs')
@@ -32,27 +32,18 @@ while True:
         dir.compile(dir.origen)
     
     if accion == 3:
-        print('archivos word')
-        for file in dir.lista_docx: print(file)
-        print('archivos excel')
-        for file in dir.lista_xlsx: print(file)
-        print('archivos pdfs')
-        for file in dir.lista_pdf: print(file)
+        print('archivos word:')
+        for file in dir.lista_docx: print(r'- ',file)
+        print('\narchivos excel:')
+        for file in dir.lista_xlsx: print(r'- ',file)
+        print('\narchivos pdfs:')
+        for file in dir.lista_pdf: print(r'- ',file)
     
-    print('desea realizar otra accion?')
+    print('¿desea realizar otra accion?')
     print('Si [1]')
     print('No [2]')
     x = int(input('>>> '))
     if x == 1:
         continue
-
-dir_destino = dir_actual + '/pdfs'
-direc_origen= FileToPDF(dir_actual, dir_destino)
-
-n = int(input('escriba 1 para convertir documentos .docx\nEscriba 2 para convertir documentos .xlxs: '))
-if n == 1:
-    direc_origen.word_to_pdf()
-elif n == 2:
-    direc_origen.excel_to_pdf()
-else:
-    print('ERROR inesperado')
+    if x == 2:
+        break
