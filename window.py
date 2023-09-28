@@ -1,6 +1,8 @@
 import curses
 import os
 from ClassToPDF.word import *
+from unidecode import unidecode
+
 # Definir la clase FileToPDF aquí o importarla adecuadamente
 
 menu_principal = ['CONVERTIR', 'COMBINAR PDFs', 'LISTA', 'CAMBIAR DIRECTORIO', 'EXIT']
@@ -68,6 +70,17 @@ def sec_convertir(stdscr, dir_origen, dir_destino):
         print_menu(stdscr, current_row_idx, menu_convertir)
         stdscr.refresh()
 
+def sec_elegir_dir(stdscr):
+    curses.curs_set(0)
+    curses.noecho()
+    dir = os.path.normpath('C:/')
+    while True:
+        stdscr.clear()
+        dir_list = os.listdir(dir)
+        for idx, file in enumerate(dir_list):
+            pass
+
+
 def sec_cambiar_dir(stdscr):
     curses.curs_set(1)
     curses.echo()
@@ -108,41 +121,82 @@ def sec_cambiar_dir(stdscr):
         n=1
 
     if dir_destino == '':
+        stdscr.clear()
         dir_destino = dir_origen
+        stdscr.addstr(0, 0, '¿Desea Crear una carpeta pdfs?')
+        stdscr.addstr(1, 0, 'NO [0]')    
+        stdscr.addstr(2, 0, 'SI [1]')
+        stdscr.refresh()
+        num = stdscr.getch()
+        if num == 1:
+            if not os.path.exists(dir_destino + '/pdfs'):
+                os.mkdir(dir_destino + '/pdfs')
+            dir_destino = dir_origen + '/pdfs'
 
-    if not os.path.exists(dir_destino + '/pdfs'):
-        os.mkdir(dir_destino + '/pdfs')
-
-    dir_destino = dir_origen + '/pdfs'
     curses.curs_set(0)
     curses.noecho()
     return dir_origen, dir_destino
 
-def sec_lista(stdscr,dir_origen,dir_destino):
+def sec_lista(stdscr, dir_origen, dir_destino):
+    i = 0
     stdscr.clear()
-    dir = FileToPDF(dir_origen,dir_destino)
-    files = os.listdir(dir.origen)
-    for idx, file in enumerate(files):
-        if file in dir.lista_docx:
-            stdscr.attron(curses.color_pair(3))
-            stdscr.addstr(idx,0,file)
-            stdscr.attroff(curses.color_pair(3))
-        elif file in dir.lista_xlsx:
-            stdscr.attron(curses.color_pair(4))
-            stdscr.addstr(idx,0,file)
-            stdscr.attroff(curses.color_pair(4))
-        elif file in dir.lista_pdf:
-            stdscr.attron(curses.color_pair(2))
-            stdscr.addstr(idx,0,file)
-            stdscr.attroff(curses.color_pair(2))
-        elif file.find('.') == -1:
-            stdscr.attron(curses.color_pair(1))
-            stdscr.addstr(idx,0,file)
-            stdscr.attroff(curses.color_pair(1))
-        else:
-            stdscr.addstr(idx,0,file)
+    h, w = stdscr.getmaxyx()
+    pad = curses.newpad(200,200)
     stdscr.refresh()
-    stdscr.getch()
+    while True:
+        pad.clear()
+        dir = FileToPDF(dir_origen, dir_destino)
+        all_files = os.listdir(dir.origen)
+        visible_files = []
+        for file in all_files:
+            if file.startswith('.'):
+                continue
+            visible_files.append(file)
+        for idx, file in enumerate(visible_files):
+            if not os.path.exists(os.path.join(dir_origen, file)):
+                continue
+            if file in dir.lista_docx:
+                pad.attron(curses.color_pair(3))
+            elif file in dir.lista_xlsx:
+                pad.attron(curses.color_pair(4))
+            elif file in dir.lista_pdf:
+                pad.attron(curses.color_pair(2))
+            elif os.path.isdir(os.path.join(dir.origen, file)):
+                pad.attron(curses.color_pair(1))
+            try:
+                pad.addstr(idx, 0, str(idx) + ' - ' + file)
+            except Exception as e:
+                print(e)
+            pad.attroff(curses.color_pair(1))
+            pad.attroff(curses.color_pair(2))
+            pad.attroff(curses.color_pair(3))
+            pad.attroff(curses.color_pair(4))
+        pad.refresh(i,0,0,0,h - 1,w//2)
+        stdscr.refresh()
+        key = stdscr.getch()
+        if key == 27:
+            break
+        elif key == 450 and i > 0:
+            i -=1
+        elif key == 456 and i < len(visible_files) - 1:
+            i+= 1
+        elif key == 454:
+            if file.find('.') == -1:
+                try:
+                    dir_origen = os.path.join(dir_origen, visible_files[i])
+                    i = 0
+                except Exception as e:
+                    print(e)
+                except PermissionError as e:
+                    print(e)
+        elif key == 452:
+            try:
+                dir_origen = os.path.dirname(dir.origen)
+                i = 0
+            except Exception as e:
+                pass
+            except PermissionError as e:
+                pass
 
 def main(stdscr):
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
@@ -180,7 +234,8 @@ def main(stdscr):
         print_menu(stdscr, current_row_idx, menu_principal)
         stdscr.refresh()
     
-    
+
+
 
 
 curses.wrapper(main)
